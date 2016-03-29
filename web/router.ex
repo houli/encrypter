@@ -7,6 +7,7 @@ defmodule Encrypter.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Encrypter.Plug.CurrentUser
   end
 
   pipeline :api do

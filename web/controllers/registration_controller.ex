@@ -3,6 +3,7 @@ defmodule Encrypter.RegistrationController do
 
   alias Encrypter.Password
 
+  plug Encrypter.Plug.Authenticate
   plug :scrub_params, "user" when action in [:create]
 
   def new(conn, _params) do

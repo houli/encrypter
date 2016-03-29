@@ -3,11 +3,20 @@ defmodule Encrypter.SessionController do
 
   plug :scrub_params, "user" when action in [:create]
 
-  def new(conn, _params) do
-    render conn, changeset: User.changeset(%User{})
+  def action(conn, _) do
+    apply(__MODULE__, action_name(conn),
+          [conn, conn.params, conn.assigns.current_user])
   end
 
-  def create(conn, %{"user" => user_params}) do
+  def new(conn, _params, current_user) do
+    if current_user do
+      conn |> redirect(to: page_path(conn, :index))
+    else
+      render conn, changeset: User.changeset(%User{})
+    end
+  end
+
+  def create(conn, %{"user" => user_params}, _current_user) do
     user = if is_nil(user_params["username"]) do
       nil
     else
@@ -17,7 +26,7 @@ defmodule Encrypter.SessionController do
     user |> sign_in(user_params["password"], conn)
   end
 
-  def delete(conn, _) do
+  def delete(conn, _params, _current_user) do
     delete_session(conn, :current_user)
     |> put_flash(:info, "You have been logged out.")
     |> redirect(to: session_path(conn, :new))
@@ -26,19 +35,19 @@ defmodule Encrypter.SessionController do
   defp sign_in(user, _password, conn) when is_nil(user) do
     conn
     |> put_flash(:error, "Could not find a user with that username.")
-    |> render "new.html", changeset: User.changeset(%User{})
+    |> render("new.html", changeset: User.changeset(%User{}))
   end
 
   defp sign_in(user, password, conn) when is_map(user) do
     if Comeonin.Bcrypt.checkpw(password, user.encrypted_password) do
       conn
       |> put_session(:current_user, user)
-      |> put_flash(:info, "You are now signed in.")
+      |> put_flash(:info, "You are now logged in.")
       |> redirect(to: page_path(conn, :index))
     else
       conn
       |> put_flash(:error, "Username or password are incorrect.")
-      |> render "new.html", changeset: User.changeset(%User{})
+      |> render("new.html", changeset: User.changeset(%User{}))
     end
   end
 end
