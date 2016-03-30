@@ -3,7 +3,6 @@ defmodule Encrypter.RegistrationController do
 
   alias Encrypter.Password
 
-  plug Encrypter.Plug.Authenticate
   plug :scrub_params, "user" when action in [:create]
 
   def new(conn, _params) do
@@ -18,7 +17,7 @@ defmodule Encrypter.RegistrationController do
       case Encrypter.Repo.insert new_user do
         {:ok, new_user} ->
           conn
-          |> put_flash(:info, "Successfully registered and logged in")
+          |> put_flash(:info, "Successfully registered and logged in.")
           |> put_session(:current_user, new_user)
           |> redirect(to: page_path(conn, :index))
         {:error, changeset} ->
