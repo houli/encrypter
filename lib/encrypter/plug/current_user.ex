@@ -4,6 +4,11 @@ defmodule Encrypter.Plug.CurrentUser do
   def init(params), do: params
 
   def call(conn, _params) do
-    assign(conn, :current_user, get_session(conn, :current_user))
+    case get_session(conn, :current_user) do
+      nil ->
+        assign(conn, :current_user, nil)
+      id ->
+        assign(conn, :current_user, Encrypter.Repo.get(Encrypter.User, id))
+    end
   end
 end

@@ -12,16 +12,46 @@
   </head>
 
   <body>
+
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <%= link "Encrypter", to: page_path(@conn, :index), class: "navbar-brand" %>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Folders</span></a></li>
+            <li><a href="#">Create a Folder</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <%= if @current_user do %>
+              <li class="hidden-xs navbar-text">Logged in as <%= @current_user.username %></li>
+              <li><%= link "Logout", to: session_path(@conn, :delete) %></li>
+            <% else %>
+              <li><%= link "Login", to: session_path(@conn, :new) %></li>
+              <li><%= link "Register", to: registration_path(@conn, :new) %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
     <div class="container">
-      <h1>Encrypter</h1>
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
 
       <main role="main">
         <%= render @view_module, @view_template, assigns %>
       </main>
+    </div>
 
-    </div> <!-- /container -->
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
   </body>
 </html>

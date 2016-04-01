@@ -3,14 +3,23 @@ defmodule Encrypter.RegistrationController do
 
   alias Encrypter.Password
 
-  plug :scrub_params, "user" when action in [:create]
-
-  def new(conn, _params) do
-    changeset = User.changeset(%User{})
-    render conn, changeset: changeset
+  def action(conn, _) do
+    apply(__MODULE__, action_name(conn),
+          [conn, conn.params, conn.assigns.current_user])
   end
 
-  def create(conn, %{"user" => user_params}) do
+  plug :scrub_params, "user" when action in [:create]
+
+  def new(conn, _params, current_user) do
+    if current_user do
+      conn |> redirect(to: page_path(conn, :index))
+    else
+      changeset = User.changeset(%User{})
+      render conn, changeset: changeset
+    end
+  end
+
+  def create(conn, %{"user" => user_params}, _current_user) do
     changeset = User.changeset(%User{}, user_params)
     if changeset.valid? do
       new_user = Password.generate_password(changeset)
@@ -18,7 +27,7 @@ defmodule Encrypter.RegistrationController do
         {:ok, new_user} ->
           conn
           |> put_flash(:info, "Successfully registered and logged in.")
-          |> put_session(:current_user, new_user)
+          |> put_session(:current_user, new_user.id)
           |> redirect(to: page_path(conn, :index))
         {:error, changeset} ->
           render conn, "new.html", changeset: changeset

@@ -41,7 +41,7 @@ defmodule Encrypter.SessionController do
   defp sign_in(user, password, conn) when is_map(user) do
     if Comeonin.Bcrypt.checkpw(password, user.encrypted_password) do
       conn
-      |> put_session(:current_user, user)
+      |> put_session(:current_user, user.id)
       |> put_flash(:info, "You are now logged in.")
       |> redirect(to: page_path(conn, :index))
     else

@@ -37,9 +37,7 @@ defmodule Encrypter.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.9"},
      {:cowboy, "~> 1.0"},
-     {:comeonin, "~> 2.3.0"},
-     {:arc_ecto, "~> 0.3.0"},
-     {:uuid, "~> 1.1"}]
+     {:comeonin, "~> 2.3.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
