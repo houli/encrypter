@@ -17,10 +17,12 @@ defmodule Encrypter.Router do
   scope "/", Encrypter do
     pipe_through :browser # Use the default browser stack
 
-    get "/", SessionController, :new
+    get "/", FolderController, :index
+    get "/folder/new", FolderController, :new
+    post "/folder/new", FolderController, :create
+    get "/login", SessionController, :new
     post "/login", SessionController, :create
     get "/logout", SessionController, :delete
-    get "/pages", PageController, :index
     get "/registration", RegistrationController, :new
     post "/registration", RegistrationController, :create
   end

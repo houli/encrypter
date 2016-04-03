@@ -7,6 +7,8 @@ defmodule Encrypter.User do
     field :password, :string, virtual: true
     field :password_confirmation, :string, virtual: true
     field :public_key, :string
+    has_many :folders, Encrypter.Folder, foreign_key: :owner_id
+
     timestamps
   end
 

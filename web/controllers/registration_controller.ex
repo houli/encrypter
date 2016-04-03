@@ -12,7 +12,7 @@ defmodule Encrypter.RegistrationController do
 
   def new(conn, _params, current_user) do
     if current_user do
-      conn |> redirect(to: page_path(conn, :index))
+      conn |> redirect(to: folder_path(conn, :index))
     else
       changeset = User.changeset(%User{})
       render conn, changeset: changeset
@@ -23,12 +23,12 @@ defmodule Encrypter.RegistrationController do
     changeset = User.changeset(%User{}, user_params)
     if changeset.valid? do
       new_user = Password.generate_password(changeset)
-      case Encrypter.Repo.insert new_user do
+      case Repo.insert new_user do
         {:ok, new_user} ->
           conn
           |> put_flash(:info, "Successfully registered and logged in.")
           |> put_session(:current_user, new_user.id)
-          |> redirect(to: page_path(conn, :index))
+          |> redirect(to: folder_path(conn, :index))
         {:error, changeset} ->
           render conn, "new.html", changeset: changeset
       end

@@ -10,7 +10,7 @@ defmodule Encrypter.SessionController do
 
   def new(conn, _params, current_user) do
     if current_user do
-      conn |> redirect(to: page_path(conn, :index))
+      conn |> redirect(to: folder_path(conn, :index))
     else
       render conn, changeset: User.changeset(%User{})
     end
@@ -43,7 +43,7 @@ defmodule Encrypter.SessionController do
       conn
       |> put_session(:current_user, user.id)
       |> put_flash(:info, "You are now logged in.")
-      |> redirect(to: page_path(conn, :index))
+      |> redirect(to: folder_path(conn, :index))
     else
       conn
       |> put_flash(:error, "Username or password are incorrect.")
