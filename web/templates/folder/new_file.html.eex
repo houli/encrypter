@@ -1,0 +1,22 @@
+<h3>Uploading file to folder "<%= @folder.name %>"</h3>
+<%= form_for @changeset, folder_path(@conn, :upload_file, @folder.id), [multipart: true], fn f -> %>
+  <%= if f.errors != [] do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong! Please check the errors below:</p>
+      <ul>
+        <%= for {attr, message} <- f.errors do %>
+          <li><%= humanize(attr) %> <%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= label f, :file %>
+    <%= file_input f, :file %>
+  </div>
+
+  <div class="form-group">
+    <%= submit "Upload", class: "btn btn-primary" %>
+  </div>
+<% end %>

@@ -5,6 +5,7 @@ defmodule Encrypter.Folder do
     field :name, :string
     field :folder_key, :string
     belongs_to :owner, Encrypter.User
+    has_many :files, Encrypter.File
 
     timestamps
   end
