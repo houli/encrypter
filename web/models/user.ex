@@ -9,6 +9,9 @@ defmodule Encrypter.User do
     field :public_key, :string
     has_many :folders, Encrypter.Folder, foreign_key: :owner_id
 
+    has_many :folder_users, Encrypter.FolderUser
+    has_many :accessible_folders, through: [:folder_users, :folder]
+
     timestamps
   end
 

@@ -18,6 +18,7 @@
         <td class="text-right">
           <%= if folder.owner == @current_user do %>
             <%= link "Add User", to: folder_path(@conn, :edit, folder), class: "btn btn-primary btn-xs" %>
+            <%= link "Upload File", to: folder_path(@conn, :new_file, folder), class: "btn btn-primary btn-xs" %>
             <%= link "Delete", to: folder_path(@conn, :delete, folder), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
           <% end %>
         </td>

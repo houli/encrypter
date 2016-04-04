@@ -7,6 +7,9 @@ defmodule Encrypter.Folder do
     belongs_to :owner, Encrypter.User
     has_many :files, Encrypter.File
 
+    has_many :folder_users, Encrypter.FolderUser
+    has_many :users, through: [:folder_users, :user]
+
     timestamps
   end
 

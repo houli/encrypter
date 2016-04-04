@@ -20,9 +20,15 @@ defmodule Encrypter.FolderController do
     render conn, folders: folders
   end
 
-  def show(conn, %{"id" => folder_id}, _current_user) do
-    folder = Repo.get!(Folder, folder_id) |> Repo.preload(:files)
-    render conn, folder: folder
+  def show(conn, %{"id" => folder_id}, current_user) do
+    folder = Repo.get!(Folder, folder_id) |> Repo.preload([:files, :users, :owner])
+    folder_key = nil
+    if folder.owner == current_user || Enum.member?(folder.users, current_user) do
+      [entry] = :public_key.pem_decode(current_user.public_key)
+      user_key = :public_key.pem_entry_decode(entry)
+      folder_key = Base.encode64(:public_key.encrypt_public(folder.folder_key, user_key))
+    end
+    render conn, folder: folder, folder_key: folder_key
   end
 
   def edit(conn, %{"id" => folder_id}, current_user) do
@@ -39,7 +45,7 @@ defmodule Encrypter.FolderController do
   def add_user(conn, %{"id" => folder_id}, current_user) do
     folder = load_folder(folder_id)
     if folder.owner == current_user do
-
+      render conn, folder: folder
     else
       conn
       |> put_flash(:error, "You are not the owner of this folder")

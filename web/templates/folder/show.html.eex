@@ -1,4 +1,12 @@
 <h3>Showing folder "<%= @folder.name %>"</h3>
+<%= if @folder_key do %>
+  <p>To get the symmetric AES key for this folder run:</p>
+  <code style="word-wrap: break-word">
+    base64 -D &lt;&lt;&lt; <%= @folder_key %> | openssl rsautl -decrypt -inkey your_private_key.pem | xargs printf &quot;%s\n&quot
+  </code>
+  <p>To decrypt the files in this folder run:</p>
+  <code>openssl aes-256-cbc -d -K [symmetric_key] -iv [file_specific_iv] -in [encrypted_file] -out [filename]</code>
+  <% end %>
 <table class="table">
   <thead>
     <tr>
