@@ -30,8 +30,11 @@ defmodule Encrypter.Web do
     quote do
       use Phoenix.Controller
 
+      alias Encrypter.File
+      alias Encrypter.Folder
       alias Encrypter.Repo
       alias Encrypter.User
+
       import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
 

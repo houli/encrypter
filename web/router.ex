@@ -18,14 +18,15 @@ defmodule Encrypter.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", FolderController, :index
-    get "/folder/new", FolderController, :new
-    post "/folder", FolderController, :create
-    get "/folder/:id", FolderController, :show
-    delete "/folder/:id", FolderController, :delete
-    get "/folder/:id/edit", FolderController, :edit
-    post "/folder/:id/edit", FolderController, :add_user
-    get "/folder/:id/upload", FolderController, :new_file
-    post "/folder/:id/upload", FolderController, :upload_file
+    get "/folders/new", FolderController, :new
+    post "/folders", FolderController, :create
+    get "/folders/:id", FolderController, :show
+    delete "/folders/:id", FolderController, :delete
+    get "/folders/:id/edit", FolderController, :edit
+    post "/folders/:id/edit", FolderController, :add_user
+
+    get "/folders/:id/upload", FileController, :new
+    post "/folders/:id/upload", FileController, :create
 
     get "/login", SessionController, :new
     post "/login", SessionController, :create
