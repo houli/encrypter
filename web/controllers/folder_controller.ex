@@ -16,7 +16,7 @@ defmodule Encrypter.FolderController do
   end
 
   def show(conn, %{"id" => folder_id}, current_user) do
-    folder = Repo.get!(Folder, folder_id) |> Repo.preload([:files, :users, :owner])
+    folder = load_folder(folder_id) |> Repo.preload([:files, :users])
     folder_key = nil
     if folder.owner == current_user || Enum.member?(folder.users, current_user) do
       [entry] = :public_key.pem_decode(current_user.public_key)
@@ -26,31 +26,8 @@ defmodule Encrypter.FolderController do
     render conn, folder: folder, folder_key: folder_key
   end
 
-  def edit(conn, %{"id" => folder_id}, current_user) do
-    folder = load_folder(folder_id)
-    changeset = FolderUser.changeset(%FolderUser{})
-    if folder.owner == current_user do
-      render conn, changeset: changeset, folder: folder, users: Repo.all(User)
-    else
-      conn
-      |> put_flash(:error, "You are not the owner of this folder.")
-      |> redirect(to: folder_path(conn, :index))
-    end
-  end
-
-  def add_user(conn, %{"id" => folder_id}, current_user) do
-    folder = load_folder(folder_id)
-    if folder.owner == current_user do
-      render conn, folder: folder
-    else
-      conn
-      |> put_flash(:error, "You are not the owner of this folder.")
-      |> redirect(to: folder_path(conn, :index))
-    end
-  end
-
   def delete(conn, %{"id" => folder_id}, current_user) do
-    folder = Repo.get!(Folder, folder_id) |> Repo.preload(:owner)
+    folder = load_folder(folder_id)
     if folder.owner == current_user do
       Repo.delete!(folder)
 
@@ -86,6 +63,39 @@ defmodule Encrypter.FolderController do
       end
     else
       render conn, "new.html", changeset: changeset
+    end
+  end
+
+  def edit(conn, %{"id" => folder_id}, current_user) do
+    folder = load_folder(folder_id) |> Repo.preload(:users)
+    changeset = FolderUser.changeset(%FolderUser{})
+    if folder.owner == current_user do
+      render conn, changeset: changeset, folder: folder, users: Repo.all(User)
+    else
+      conn
+      |> put_flash(:error, "You are not the owner of this folder.")
+      |> redirect(to: folder_path(conn, :index))
+    end
+  end
+
+  def add_user(conn, %{"id" => folder_id, "folder_user" => folder_user}, current_user) do
+    user = Repo.get_by!(User, username: folder_user["username"])
+    folder = load_folder(folder_id)
+    if folder.owner == current_user do
+      changeset = FolderUser.changeset(%FolderUser{}, %{folder_id: folder_id, user_id: user.id})
+      if changeset.valid? do
+        Repo.insert changeset
+
+        conn
+        |> put_flash(:info, "User \"#{user.username}\" added to the folder \"#{folder.name}\"")
+        |> redirect(to: folder_path(conn, :index))
+      else
+        render conn, "edit.html", changeset: changeset
+      end
+    else
+      conn
+      |> put_flash(:error, "You are not the owner of this folder.")
+      |> redirect(to: folder_path(conn, :index))
     end
   end
 
