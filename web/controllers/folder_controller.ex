@@ -11,7 +11,7 @@ defmodule Encrypter.FolderController do
   plug :scrub_params, "folder" when action in [:create]
 
   def index(conn, _params, _current_user) do
-    folders = Repo.all(Folder) |> Repo.preload(:owner)
+    folders = Repo.all(Folder) |> Repo.preload([:owner, :users])
     render conn, folders: folders
   end
 
@@ -21,6 +21,8 @@ defmodule Encrypter.FolderController do
     if folder.owner == current_user || Enum.member?(folder.users, current_user) do
       [entry] = :public_key.pem_decode(current_user.public_key)
       user_key = :public_key.pem_entry_decode(entry)
+
+      # Encrypt the folder's AES key and encode it do be displayed on the page
       folder_key = Base.encode64(:public_key.encrypt_public(folder.folder_key, user_key))
     end
     render conn, folder: folder, folder_key: folder_key
@@ -52,7 +54,7 @@ defmodule Encrypter.FolderController do
       new_folder =
         changeset
         |> put_change(:owner_id, current_user.id)
-        |> put_change(:folder_key, Base.encode16(:crypto.strong_rand_bytes(32)))
+        |> put_change(:folder_key, Base.encode16(:crypto.strong_rand_bytes(32))) # Create an AES key for this folder
       case Repo.insert new_folder do
         {:ok, new_folder} ->
           conn

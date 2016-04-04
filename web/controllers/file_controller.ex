@@ -13,8 +13,8 @@ defmodule Encrypter.FileController do
   plug :scrub_params, "file" when action in [:create]
 
   def new(conn, %{"id" => folder_id}, current_user) do
-    folder = load_folder(folder_id)
-    if folder.owner == current_user do
+    folder = load_folder(folder_id) |> Repo.preload(:users)
+    if folder.owner == current_user || Enum.member?(folder.users, current_user) do
       changeset = File.changeset(%File{})
       render conn, changeset: changeset, folder: folder
     else
@@ -25,9 +25,10 @@ defmodule Encrypter.FileController do
   end
 
   def create(conn, %{"id" => folder_id, "file" => file_params}, current_user) do
-    folder = load_folder(folder_id)
-    if folder.owner == current_user do
+    folder = load_folder(folder_id) |> Repo.preload(:users)
+    if folder.owner == current_user || Enum.member?(folder.users, current_user) do
 
+      # Random initialisation vector of 16 bytes
       initialisation_vector = :crypto.strong_rand_bytes(16)
       AES.encrypt_file_aes_256(file_params["file"].path,
                                folder.folder_key,
@@ -36,6 +37,7 @@ defmodule Encrypter.FileController do
       changeset = File.changeset(%File{}, Map.put(file_params, "folder_id", folder_id))
 
       if changeset.valid? do
+        # Set the initialisation vector and store the file in the database
         Repo.insert(changeset |> put_change(:iv, Base.encode16(initialisation_vector)))
 
         conn

@@ -16,10 +16,14 @@
           <% end %>
         </td>
         <td class="text-right">
-          <%= if folder.owner == @current_user do %>
-            <%= link "Add User", to: folder_path(@conn, :edit, folder), class: "btn btn-primary btn-xs" %>
+          <%= if folder.owner == @current_user || Enum.member?(folder.users, @current_user) do %>
             <%= link "Upload File", to: file_path(@conn, :new, folder), class: "btn btn-primary btn-xs" %>
-            <%= link "Delete", to: folder_path(@conn, :delete, folder), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+
+            <%= if folder.owner == @current_user do %>
+              <%= link "Add User", to: folder_path(@conn, :edit, folder), class: "btn btn-primary btn-xs" %>
+              <%= link "Delete", to: folder_path(@conn, :delete, folder), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+            <% end %>
+
           <% end %>
         </td>
       </tr>

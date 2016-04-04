@@ -3,6 +3,7 @@ defmodule Encrypter.AES do
     {:ok, folder_key} = Base.decode16(folder_key)
     {:ok, plain_text} = File.read(path)
 
+    # Encrypt the temp file with aes-cbc-256
     cipher_text = :crypto.block_encrypt(:aes_cbc256,
                                         folder_key,
                                         initialisation_vector,
