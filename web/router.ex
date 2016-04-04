@@ -20,6 +20,10 @@ defmodule Encrypter.Router do
     get "/", FolderController, :index
     get "/folder/new", FolderController, :new
     post "/folder", FolderController, :create
+    get "/folder/:id", FolderController, :show
+    delete "/folder/:id", FolderController, :delete
+    get "/folder/:id/edit", FolderController, :edit
+    post "/folder/:id/edit", FolderController, :add_user
     get "/folder/:id/upload", FolderController, :new_file
     post "/folder/:id/upload", FolderController, :upload_file
 
@@ -29,11 +33,5 @@ defmodule Encrypter.Router do
 
     get "/registration", RegistrationController, :new
     post "/registration", RegistrationController, :create
-
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", Encrypter do
-  #   pipe_through :api
-  # end
 end

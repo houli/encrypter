@@ -11,7 +11,9 @@ defmodule Encrypter.Endpoint do
     at: "/", from: :encrypter, gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
 
-  plug Plug.Static, at: "/uploads", from: "uploads", gzip: true
+  plug Plug.Static,
+    at: "/uploads", from: "uploads", gzip: true,
+    headers: [{"content-type", "application/force-download"}]
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

@@ -2,8 +2,9 @@ defmodule Encrypter.FolderController do
   use Encrypter.Web, :controller
   import Ecto.Changeset, only: [put_change: 3]
 
-  alias Encrypter.Folder
+  alias Encrypter.AES
   alias Encrypter.File
+  alias Encrypter.Folder
 
   def action(conn, _) do
     apply(__MODULE__, action_name(conn),
@@ -15,8 +16,44 @@ defmodule Encrypter.FolderController do
   plug :scrub_params, "file" when action in [:upload_file]
 
   def index(conn, _params, _current_user) do
-    folders = Repo.all(Folder)
+    folders = Repo.all(Folder) |> Repo.preload(:owner)
     render conn, folders: folders
+  end
+
+  def show(conn, %{"id" => folder_id}, _current_user) do
+    folder = Repo.get!(Folder, folder_id) |> Repo.preload(:files)
+    render conn, folder: folder
+  end
+
+  def edit(conn, %{"id" => folder_id}, current_user) do
+    folder = load_folder(folder_id)
+    if folder.owner == current_user do
+      render conn, folder: folder
+    else
+      conn
+      |> put_flash(:error, "You are not the owner of this folder")
+      |> redirect(to: folder_path(conn, :index))
+    end
+  end
+
+  def add_user(conn, %{"id" => folder_id}, current_user) do
+    folder = load_folder(folder_id)
+    if folder.owner == current_user do
+
+    else
+      conn
+      |> put_flash(:error, "You are not the owner of this folder")
+      |> redirect(to: folder_path(conn, :index))
+    end
+  end
+
+  def delete(conn, %{"id" => folder_id}, current_user) do
+    folder = Repo.get!(Folder, folder_id) |> Repo.preload(:owner)
+    Repo.delete!(folder)
+
+    conn
+    |> put_flash(:info, "Folder deleted successfully.")
+    |> redirect(to: folder_path(conn, :index))
   end
 
   def new(conn, _params, _current_user) do
@@ -35,7 +72,7 @@ defmodule Encrypter.FolderController do
         {:ok, new_folder} ->
           conn
           |> put_flash(:info, "Created folder \"#{new_folder.name}\"")
-          |> redirect(to: folder_path(conn, :index))
+          |> redirect(to: folder_path(conn, :show, new_folder))
         {:error, changeset} ->
           render conn, "new.html", changeset: changeset
       end
@@ -45,7 +82,7 @@ defmodule Encrypter.FolderController do
   end
 
   def new_file(conn, %{"id" => folder_id}, current_user) do
-    folder = Repo.get(Folder, folder_id) |> Repo.preload(:owner)
+    folder = load_folder(folder_id)
     if folder.owner == current_user do
       changeset = File.changeset(%File{})
       render conn, changeset: changeset, folder: folder
@@ -57,13 +94,13 @@ defmodule Encrypter.FolderController do
   end
 
   def upload_file(conn, %{"id" => folder_id, "file" => file_params}, current_user) do
-    folder = Repo.get(Folder, folder_id) |> Repo.preload(:owner)
+    folder = load_folder(folder_id)
     if folder.owner == current_user do
 
       initialisation_vector = :crypto.strong_rand_bytes(16)
-      encrypt_file_aes_256(file_params["file"].path,
-                           folder.folder_key,
-                           initialisation_vector)
+      AES.encrypt_file_aes_256(file_params["file"].path,
+                               folder.folder_key,
+                               initialisation_vector)
 
       changeset = File.changeset(%File{}, Map.put(file_params, "folder_id", folder_id))
 
@@ -72,7 +109,7 @@ defmodule Encrypter.FolderController do
 
         conn
         |> put_flash(:info, "Uploaded and encrypted file.")
-        |> redirect(to: folder_path(conn, :index))
+        |> redirect(to: folder_path(conn, :show, folder))
       else
         render conn, "new_file.html", changeset: changeset
       end
@@ -83,23 +120,7 @@ defmodule Encrypter.FolderController do
     end
   end
 
-  defp encrypt_file_aes_256(path, folder_key, initialisation_vector) do
-    {:ok, folder_key} = Base.decode16(folder_key)
-    {:ok, plain_text} = Elixir.File.read(path)
-
-    cipher_text = :crypto.block_encrypt(:aes_cbc256,
-                                        folder_key,
-                                        initialisation_vector,
-                                        pkcs5_pad(plain_text))
-    # Overwrite the uploaded temp file with the encrypted temp file
-    Elixir.File.write(path, cipher_text)
-  end
-
-  # Padding function according to PKCS#5
-  # If it's evenly divisible by 16 add 16 16s
-  # Otherwise add 16 - remainder, 16 - remainder times
-  defp pkcs5_pad(plain_text) do
-    padding = 16 - rem(byte_size(plain_text), 16)
-    plain_text <> String.duplicate(<<padding>>, padding)
+  defp load_folder(id) do
+    Repo.get!(Folder, id) |> Repo.preload(:owner)
   end
 end

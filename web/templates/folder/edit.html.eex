@@ -1,0 +1,1 @@
+<h3>Adding user to "<%= @folder.name %>"</h3>

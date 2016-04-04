@@ -1,0 +1,23 @@
+<h3>Showing folder "<%= @folder.name %>"</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Filename</th>
+      <th class="text-right">Initialisation Vector</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= for file <- @folder.files do %>
+      <tr>
+        <td>
+          <%= link to: "/" <> Encrypter.FolderFile.url({file.file, file}) do %>
+            <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+            <%= file.file.file_name %>
+          <% end %>
+        </td>
+        <td class="text-right"><code><%= file.iv %></code></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
