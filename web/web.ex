@@ -32,6 +32,7 @@ defmodule Encrypter.Web do
 
       alias Encrypter.File
       alias Encrypter.Folder
+      alias Encrypter.FolderUser
       alias Encrypter.Repo
       alias Encrypter.User
 

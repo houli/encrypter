@@ -28,8 +28,9 @@ defmodule Encrypter.FolderController do
 
   def edit(conn, %{"id" => folder_id}, current_user) do
     folder = load_folder(folder_id)
+    changeset = FolderUser.changeset(%FolderUser{})
     if folder.owner == current_user do
-      render conn, folder: folder
+      render conn, changeset: changeset, folder: folder, users: Repo.all(User)
     else
       conn
       |> put_flash(:error, "You are not the owner of this folder.")

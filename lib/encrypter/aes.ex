@@ -6,16 +6,15 @@ defmodule Encrypter.AES do
     cipher_text = :crypto.block_encrypt(:aes_cbc256,
                                         folder_key,
                                         initialisation_vector,
-                                        pkcs5_pad(plain_text))
+                                        pkcs5_pad(plain_text, 16))
     # Overwrite the uploaded temp file with the encrypted temp file
     File.write(path, cipher_text)
   end
 
   # Padding function according to PKCS#5
-  # If it's evenly divisible by 16 add 16 16s
-  # Otherwise add 16 - remainder, 16 - remainder times
-  defp pkcs5_pad(plain_text) do
-    padding = 16 - rem(byte_size(plain_text), 16)
+  # Add (block_size - remainder), (block_size - remainder) times
+  defp pkcs5_pad(plain_text, block_size) do
+    padding = block_size - rem(byte_size(plain_text), block_size)
     plain_text <> String.duplicate(<<padding>>, padding)
   end
 end
